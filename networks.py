@@ -79,7 +79,7 @@ class DNN(Network):
     @staticmethod  # instance를 만들지 않아도 instance를 만든 것 처럼 class 활용 가능
     def get_network_head(inp):
         output = Dense(256, activation='sigmoid',
-                       kernel_initializer='random_nomal')(inp)
+                       kernel_initializer='random_normal')(inp)
         output = BatchNormalization()(output)
         output = Dropout(0.1)(output)
 

@@ -4,7 +4,7 @@ import numpy as np
 COLUMNS_CHART_DATA = ['date', 'open', 'high', 'low', 'close', 'volume']
 
 COLUMNS_TRAINING_DATA_V1 = [
-    'open_lastclose_ratio', 'high_close_ratio' 'low_close_ratio',
+    'open_lastclose_ratio', 'high_close_ratio', 'low_close_ratio',
     'close_lastclose_ratio', 'volume_lastvolume_ratio',
     'close_ma5_ratio', 'volume_ma5_ratio',
     'close_ma10_ratio', 'volume_ma10_ratio',
@@ -57,7 +57,7 @@ def preprocess(data):
     data.loc[1:, 'close_lastclose_ratio'] = \
         (data['close'][1:].values - data['close'][:-1].values) \
         / data['close'][:-1].values
-    data.loc[1:, 'volume_lastclose_ratio'] = \
+    data.loc[1:, 'volume_lastvolume_ratio'] = \
         (data['volume'][1:].values - data['volume'][:-1].values) \
         / data['volume'][:-1]\
             .replace(to_replace=0, method='ffill')\
@@ -67,8 +67,9 @@ def preprocess(data):
 
 
 def load_data(fpath, date_from, date_to, ver='v2'):
-    header = None if ver == 'v1' else 0
-    data = pd.read_csv(fpath, thousands=',', header=header,
+    # ver1, ver2 모두 같은 data format
+    #header = None if ver == 'v1' else 0
+    data = pd.read_csv(fpath, thousands=',',
                        converters={'date': lambda x: str(x)})
 
     # data preprocess

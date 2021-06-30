@@ -103,7 +103,7 @@ if __name__ == '__main__':
 
         # 최소/최대 투자 단위 설정
         min_trading_unit = max(int(100000 / chart_data.iloc[-1]['close']), 1)
-        max_trading_unit = max(int(1000000 / chart_data.iloc[-1]['clise']), 1)
+        max_trading_unit = max(int(1000000 / chart_data.iloc[-1]['close']), 1)
 
         # 공통 파라미터 설정
         common_params = {'rl_method': args.rl_method,
