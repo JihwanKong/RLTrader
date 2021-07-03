@@ -1,5 +1,10 @@
 import numpy as np
 import utils
+import os
+from log import WriteLog
+
+filename = os.path.basename(__file__)
+filename = os.path.splitext(filename)[0]
 
 
 class Agent:
@@ -49,6 +54,7 @@ class Agent:
         # Agent 클래스의 상태
         self.ratio_hold = 0  # 주식 보유 비율
         self.ratio_portfolio_value = 0  # 포트폴리오 가치 비율
+        self.writeLog = WriteLog(filename, __class__.__name__)
 
     def reset(self):
         self.balance = self.initial_balance

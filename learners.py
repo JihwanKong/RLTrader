@@ -1,5 +1,4 @@
 import os
-import logging
 import abc
 import collections
 import threading
@@ -10,6 +9,10 @@ from environment import Environment
 from agent import Agent
 from networks import Network, DNN, LSTMNetwork, CNN
 from visualizer import Visualizer
+from log import WriteLog
+
+filename = os.path.basename(__file__)
+filename = os.path.splitext(filename)[0]
 
 
 class ReinforcementLearner:
@@ -83,6 +86,7 @@ class ReinforcementLearner:
         self.policy_network_path = policy_network_path
         # epoch summary directory
         self.epoch_summary_dir = ''
+        self.writeLog = WriteLog(filename, self.__class__.__name__)
 
     def init_value_network(self, shared_network=None,
                            activation='linear', loss='mse'):
@@ -172,6 +176,7 @@ class ReinforcementLearner:
             self.sample = self.training_data.iloc[
                 self.training_data_idx].tolist()
             self.sample.extend(self.agent.get_states())
+            # return data type: list
             return self.sample
         return None
 
@@ -245,7 +250,7 @@ class ReinforcementLearner:
 
     def run(self, num_epoches=100, balance=10000000,
             discount_factor=0.9, start_epsilon=0.5, learning=True):
-        info = "[{code}] RL:{rl} Net:{net} LR:{lr}" \
+        info = "[{code}] RL:{rl} Net:{net} LR:{lr} " \
                "DF:{discount_factor} TU:[{min_trading_unit}," \
                "{max_trading_unit}] DRT:{delayed_reward_threshold}".format(
                     code=self.stock_code, rl=self.rl_method, net=self.net,
@@ -254,8 +259,11 @@ class ReinforcementLearner:
                     max_trading_unit=self.agent.max_trading_unit,
                     delayed_reward_threshold=self.agent.delayed_reward_threshold
                 )
+
         with self.lock:
-            logging.info(info)
+            # root logger로 log 찍지 않도록 변경
+            # logging.info(info)
+            self.writeLog.info(info)
 
         # 시작 시간
         time_start = time.time()
@@ -319,9 +327,13 @@ class ReinforcementLearner:
                 if self.value_network is not None:
                     pred_value = self.value_network.predict(
                         list(q_sample))
+                    # predict 값이 2차원 ouput -> 1차원 list변경
+                    pred_value = list(np.reshape(pred_value, (self.agent.NUM_ACTIONS, )))
                 if self.policy_network is not None:
                     pred_policy = self.policy_network.predict(
                         list(q_sample))
+                    # predict 값이 2차원 ouput -> 1차원 list변경
+                    pred_policy = list(np.reshape(pred_policy, (self.agent.NUM_ACTIONS,)))
 
                 # 신경망 또는 탐험에 의한 행동 결정
                 action, confidence, exploration = \
@@ -367,7 +379,8 @@ class ReinforcementLearner:
             if self.learning_cnt > 0:
                 self.loss /= self.learning_cnt
 
-            logging.info('[{}][Epoch {}/{}] Epsilon:{:.4f} '
+            # root logger로 log 찍지 않도록 변경
+            '''logging.info('[{}][Epoch {}/{}] Epsilon:{:.4f} '
                          '#Expl.:{}/{} #Buy:{} #Sell:{} #Hold:{} '
                          '#Stocks:{} PV:{:,.0f} '
                          'LC:{} Loss:{:.6f} ET:{:.4f}'.format(
@@ -376,7 +389,18 @@ class ReinforcementLearner:
                             self.agent.num_buy, self.agent.num_sell,
                             self.agent.num_hold, self.agent.num_stocks,
                             self.agent.portfolio_value, self.learning_cnt,
-                            self.loss, elapsed_time_epoch))
+                            self.loss, elapsed_time_epoch))'''
+
+            self.writeLog.info('[{}][Epoch {}/{}] Epsilon:{:.4f} '
+                               '#Expl.:{}/{} #Buy:{} #Sell:{} #Hold:{} '
+                               '#Stocks:{} PV:{:,.0f} '
+                               'LC:{} Loss:{:.6f} ET:{:.4f}'.format(
+                                self.stock_code, epoch_str, num_epoches, epsilon,
+                                self.exploration_cnt, self.itr_cnt,
+                                self.agent.num_buy, self.agent.num_sell,
+                                self.agent.num_hold, self.agent.num_stocks,
+                                self.agent.portfolio_value, self.learning_cnt,
+                                self.loss, elapsed_time_epoch))
 
             # 에포크 관련 정보 가시화
             self.visualize(epoch_str, num_epoches, epsilon)
@@ -393,10 +417,16 @@ class ReinforcementLearner:
 
         # 학습 관련 정보 로그 기록
         with self.lock:
-            logging.info('[{code}] Elapsed Time:{elapsed_time:.4f}'
+            # root logger로 log 찍지 않도록 변경
+            '''logging.info('[{code}] Elapsed Time:{elapsed_time:.4f}'
                          'Max PV:{max_pv:,.0f} #Win:{cnt_win}'.format(
                             code=self.stock_code, elapsed_time=elapsed_time,
-                            max_pv=max_portfolio_value, cnt_win=epoch_win_cnt))
+                            max_pv=max_portfolio_value, cnt_win=epoch_win_cnt))'''
+
+            self.writeLog.info('[{code}] Elapsed Time:{elapsed_time:.4f} '
+                               'Max PV:{max_pv:,.0f} #Win:{cnt_win}'.format(
+                                code=self.stock_code, elapsed_time=elapsed_time,
+                                max_pv=max_portfolio_value, cnt_win=epoch_win_cnt))
 
     def save_models(self):
         if self.value_network is not None and \
