@@ -1,6 +1,5 @@
 import os
 import sys
-import logging
 import argparse
 import json
 
@@ -11,7 +10,7 @@ import data_manager
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--stock_code', nargs='+')
-    parser.add_argument('--ver', choices=['v1', 'v2'], default='v2')
+    parser.add_argument('--ver', choices=['v1', 'v2'], default='v1')
     parser.add_argument('--rl_method',
                         choices=['dqn', 'pg', 'a2c', 'a3c'])
     parser.add_argument('--net',
@@ -29,6 +28,7 @@ if __name__ == '__main__':
     parser.add_argument('--output_name', default=utils.get_time_str())
     parser.add_argument('--value_network_name')
     parser.add_argument('--policy_network_name')
+    # store_true의 경우 dufault는 false(store_false는 반대)
     parser.add_argument('--reuse_models', action='store_true')
     parser.add_argument('--learning', action='store_true')
     parser.add_argument('--start_date', default='20170101')
@@ -51,6 +51,7 @@ if __name__ == '__main__':
     with open(os.path.join(output_path, 'params.json'), 'w') as f:
         f.write(json.dumps(vars(args)))
 
+    '''
     # 로그 기록 설정
     # 개선 필요
     file_handler = logging.FileHandler(filename=os.path.join(
@@ -61,6 +62,7 @@ if __name__ == '__main__':
     # logging.basicConfig(format="%(message)s", handlers=[file_handler, stream_handler], level=logging.DEBUG)
     logging.basicConfig(format="%(message)s", level=logging.DEBUG)
     # 개선필요
+    '''
 
     # 로그, Keras 백엔드 설정을 먼저하고 RLTrader 모듈을 이후에 임포트해야 함
     # from agent import Agent

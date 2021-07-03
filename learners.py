@@ -464,7 +464,9 @@ class DQNLearner(ReinforcementLearner):
             r = (delayed_reward + reward_next - reward * 2) * 100
             y_value[i, action] = r + discount_factor * value_max_next
             # for문 continue 되면 다음 value, 다음 reward가 되어 있음
-            value_max_next = value.max()
+            # value 값은 list이므로 max() attribute 미지원(np.array만 지원)
+            #value_max_next = value.max()
+            value_max_next = max(value)
             reward_next = reward
         return x, y_value, None
 

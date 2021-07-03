@@ -50,9 +50,13 @@ class Visualizer:
 
     def plot(self, epoch_str=None, num_epoches=None, epsilon=None,
              action_list=None, actions=None, num_stocks=None,
-             # outvals_value=[], outvals_policy=[], exps=None,
              outvals_value=None, outvals_policy=None, exps=None,
              learning_idxes=None, initial_balance=None, pvs=None):
+        if outvals_policy is None:
+            outvals_policy = []
+        if outvals_value is None:
+            outvals_value = []
+
         with lock:
             x = np.arange(len(actions))  # 모든 차트가 공유할 x축 데이터
             actions = np.array(actions)  # 에이전트의 행동 배열
@@ -65,7 +69,7 @@ class Visualizer:
 
             # 차트 2. 에이전트 상태 (행동, 보유 주식 수)
             for action, color in zip(action_list, self.COLORS):
-                for i in x[actions == action]:  # 각 action에 맞는 ondex
+                for i in x[actions == action]:  # 각 action에 맞는 index
                     # 배경색으로 행동 표시
                     self.axes[1].axvline(i, color=color, alpha=0.1)
             self.axes[1].plot(x, num_stocks, '-k')  # 보유 주식 수 그리기
@@ -73,7 +77,7 @@ class Visualizer:
             # 차트3. 가치 신경망
             if len(outvals_value) > 0:
                 max_actions = np.argmax(outvals_value, axis=1)
-                for action, color in zip(action_list):
+                for action, color in zip(action_list, self.COLORS):
                     # 배경 그리기
                     for idx in x:
                         if max_actions[idx] == action:
@@ -81,7 +85,7 @@ class Visualizer:
                                 idx, color=color, alpha=0.1)
                     # 가치 신경망 출력의 tanh 그리기
                     self.axes[2].plot(x, outvals_value[:, action],
-                                      color=color, linstyle='-')
+                                      color=color, linestyle='-')
 
             # 차트4. 정책 신경망
             # 탐험을 노란색 배경으로 그리기
@@ -128,9 +132,9 @@ class Visualizer:
         with lock:
             _axes = self.axes.tolist()
             for ax in _axes[1:]:
-                ax.cla()
-                ax.relin()
-                ax.autoscale()
+                ax.cla()  # 그린 차트 지우기
+                ax.relim()  # limit 초기화
+                ax.autoscale()  # 스케일 재설정
             # y축 레이블 재설정
             self.axes[1].set_ylabel('Agent')
             self.axes[2].set_ylabel('V')
@@ -141,7 +145,7 @@ class Visualizer:
                 ax.get_xaxis().get_major_formatter().set_scientific(False)
                 ax.get_yaxis().get_major_formatter().set_scientific(False)
                 # x축 간격을 일정하게 설정
-                ax.ticklabel_format(useoffset=False)
+                ax.ticklabel_format(useOffset=False)
 
     def save(self, path):
         with lock:
