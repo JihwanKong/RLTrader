@@ -94,7 +94,8 @@ class ReinforcementLearner:
             self.value_network = DNN(
                 input_dim=self.num_features,
                 output_dim=self.agent.NUM_ACTIONS,
-                lr=self.lr, shared_network=shared_network,
+                lr=self.lr, num_steps=self.num_steps,
+                shared_network=shared_network,
                 activation=activation, loss=loss)
         elif self.net == 'lstm':
             self.value_network = LSTMNetwork(
@@ -121,7 +122,8 @@ class ReinforcementLearner:
             self.policy_network = DNN(
                 input_dim=self.num_features,
                 output_dim=self.agent.NUM_ACTIONS,
-                lr=self.lr, shared_network=shared_network,
+                lr=self.lr, num_steps=self.num_steps,
+                shared_network=shared_network,
                 activation=activation, loss=loss)
         elif self.net == 'lstm':
             self.policy_network = LSTMNetwork(
@@ -327,7 +329,7 @@ class ReinforcementLearner:
                 if self.value_network is not None:
                     pred_value = self.value_network.predict(
                         list(q_sample))
-                    # predict 값이 2차원 ouput -> 1차원 list변경
+                    # 2차원 ouput -> 1차원 list변경(1 sample에 대한 결과이기 때문에)
                     pred_value = list(np.reshape(pred_value, (self.agent.NUM_ACTIONS, )))
                 if self.policy_network is not None:
                     pred_policy = self.policy_network.predict(

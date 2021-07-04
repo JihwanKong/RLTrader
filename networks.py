@@ -55,14 +55,15 @@ class Network:
 
 class DNN(Network):
     # __init__ 의 sequence가 존재하는 이유??
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, num_steps=1, **kwargs):
         super().__init__(*args, **kwargs)
+        self.num_steps = num_steps
 
         inp = None
         output = None
 
         if self.shared_network is None:
-            inp = Input((self.input_dim,))
+            inp = Input((self.num_steps, self.input_dim))
             output = self.get_network_head(inp).output
 
         else:
@@ -78,8 +79,10 @@ class DNN(Network):
 
     @staticmethod  # instance를 만들지 않아도 instance를 만든 것 처럼 class 활용 가능
     def get_network_head(inp):
+        output = Flatten()(inp)
+
         output = Dense(256, activation='sigmoid',
-                       kernel_initializer='random_normal')(inp)
+                       kernel_initializer='random_normal')(output)
         output = BatchNormalization()(output)
         output = Dropout(0.1)(output)
 
@@ -101,11 +104,11 @@ class DNN(Network):
         return Model(inp, output)
 
     def train_on_batch(self, x, y):
-        x = np.array(x).reshape((-1, self.input_dim))
+        x = np.array(x).reshape((-1, self.num_steps, self.input_dim))
         return super().train_on_batch(x, y)
 
     def predict(self, sample):
-        sample = np.array(sample).reshape((1, self.input_dim))
+        sample = np.array(sample).reshape((1, self.num_steps, self.input_dim))
         return super().predict(sample)
 
 
